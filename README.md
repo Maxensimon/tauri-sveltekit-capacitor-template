@@ -13,10 +13,13 @@ cd tauri-sveltekit-capacitor-template
 npm install
 ```
 
-After you've installed all dependencies, you need to modify the capacitor.config.ts file to enter your app_name and your app_id and specify an url to your computer Ipv4.
+After you've installed all dependencies, you need to modify the capacitor.config.ts file to enter your app_name and your app_id.
+
+You can also change the address to your local IPv4 if the automatic detection didn't work.
 
 ```ts
 import { CapacitorConfig } from '@capacitor/cli';
+import os from 'os';
 
 const isDev = true; //Change to false for production
 
@@ -31,10 +34,24 @@ const baseConfig: CapacitorConfig = {
 
 switch (isDev) {
 	case true:
+		const interfaces = os.networkInterfaces();
+
+		let address = '10.0.0.1';
+
+		Object.keys(interfaces).forEach((interfaceName) => {
+			const addresses = interfaces[interfaceName];
+			if (!addresses) return;
+			addresses.forEach((addressInfo) => {
+				if (addressInfo.family === 'IPv4' && !addressInfo.internal) {
+					address = addressInfo.address;
+				}
+			});
+		});
+
 		config = {
 			...baseConfig,
 			server: {
-				url: 'http://10.0.0.1:5173/', //Change to your Ipv4
+				url: `http://${address}:5173/`, //Change here if needed but keep the 5173 port.
 				cleartext: true
 			}
 		};
@@ -45,7 +62,6 @@ switch (isDev) {
 }
 
 export default config;
-
 ```
 
 Then, you need to generate the capacitor's android folder and ios folder.

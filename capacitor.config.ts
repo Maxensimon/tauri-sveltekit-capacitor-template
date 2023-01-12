@@ -1,4 +1,5 @@
 import { CapacitorConfig } from '@capacitor/cli';
+import os from 'os';
 
 const isDev = true; //Change to false for production
 
@@ -13,10 +14,24 @@ const baseConfig: CapacitorConfig = {
 
 switch (isDev) {
 	case true:
+		const interfaces = os.networkInterfaces();
+
+		let address = '10.0.0.1';
+
+		Object.keys(interfaces).forEach((interfaceName) => {
+			const addresses = interfaces[interfaceName];
+			if (!addresses) return;
+			addresses.forEach((addressInfo) => {
+				if (addressInfo.family === 'IPv4' && !addressInfo.internal) {
+					address = addressInfo.address;
+				}
+			});
+		});
+
 		config = {
 			...baseConfig,
 			server: {
-				url: 'http://10.0.0.1:5173/', //Change to your Ipv4
+				url: `http://${address}:5173/`, //Change here if needed but keep the 5173 port.
 				cleartext: true
 			}
 		};
